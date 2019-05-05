@@ -208,17 +208,24 @@ int main(void)
     static int time_tick = 3; // 1S delay
     
 	delay_init();
+    LED_Init();
 	NVIC_Configuration();
 	
 	delay_ms(500);
  	usb_port_set(0); 	//USB先断开
 	delay_ms(300);
    	usb_port_set(1);	//USB再次连接
-   	
+    
  	USB_Interrupts_Config();    
  	Set_USBClock();   
  	USB_Init();
-
+//   	while(1)
+//    {
+//        LED1=0;
+//        delay_ms(20);
+//        LED1=1;
+//        delay_ms(980);
+//    }
 	while(1)
 	{
         delay_ms(1000);

@@ -15,11 +15,26 @@
 #define FATBootSize      62
 #define FATTableSize      4
 
-#define FLASH_START_ADDR        0x08005000       // Flash start address
+#define     FLASH_START_ADDR         0x08005000       // Flash start address
+#define     FLASH_SIZE              (100*1024*1024)  // 100M
 
-#define FLASH_SIZE              (100*1024*1024)  // 100M
-#define FLASH_PAGE_SIZE         (2*1024)         // 2k Bytes per page
-#define FLASH_WAIT_TIMEOUT      100000
+#if defined (STM32F10X_MD) || defined (STM32F10X_MD_VL)
+ #define FLASH_PAGE_SIZE                         (0x400)    /* 1 Kbyte */
+ //#define FLASH_SIZE                        (0x20000)  /* 128 KBytes */
+#elif defined STM32F10X_CL
+ #define FLASH_PAGE_SIZE                         (0x800)    /* 2 Kbytes */
+ #define FLASH_SIZE                        (0x40000)  /* 256 KBytes */
+#elif defined STM32F10X_HD || defined (STM32F10X_HD_VL)
+ #define FLASH_PAGE_SIZE                         (0x800)    /* 2 Kbytes */
+ //#define FLASH_SIZE                        (0x80000)  /* 512 KBytes */
+#elif defined STM32F10X_XL
+ #define FLASH_PAGE_SIZE                         (0x800)    /* 2 Kbytes */
+ #define FLASH_SIZE                        (0x100000) /* 1 MByte */
+#else 
+ #error "Please select first the STM32 device to be used (in stm32f10x.h)"    
+#endif
+
+#define     FLASH_WAIT_TIMEOUT      100000
 
 typedef __packed struct
 {

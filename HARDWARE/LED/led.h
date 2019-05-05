@@ -13,8 +13,17 @@
 //Copyright(C) 广州市星翼电子科技有限公司 2009-2019
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 
+
+
+#if defined STM32F10X_HD
 #define LED0 PBout(5)// PB5
 #define LED1 PEout(5)// PE5	
+#elif defined STM32F10X_MD
+#define LED0 PBout(5)// PB5
+#define LED1 PCout(13)// PC13	
+#endif
+
+#define     FLASH_WAIT_TIMEOUT      100000
 
 void LED_Init(void);//初始化
 
