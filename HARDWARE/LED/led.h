@@ -16,14 +16,10 @@
 
 
 #if defined STM32F10X_HD
-#define LED0 PBout(5)// PB5
-#define LED1 PEout(5)// PE5	
+#define LED    PEout(5)// PE5	
 #elif defined STM32F10X_MD
-#define LED0 PBout(5)// PB5
-#define LED1 PCout(13)// PC13	
+#define LED    PAout(9)// PA09	
 #endif
-
-#define     FLASH_WAIT_TIMEOUT      100000
 
 void LED_Init(void);//≥ı ºªØ
 

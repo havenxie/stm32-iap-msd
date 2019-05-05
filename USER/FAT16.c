@@ -341,22 +341,23 @@ uint32_t FAT_RootDirWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
 
 extern uint32_t flash_flag;
 static HEX_OBJ_t* mHex;
-
+#include "usart.h"
 uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
 {
     int32_t filesize_total = (int32_t)FileAttr.DIR_FileSize;
     int32_t* filesize_write = (int32_t*)&(FileAttr.DIR_WriteTime);
     uint32_t i = 0;
     
-    if     (!memcmp(&(FileAttr.DIR_Name[8]), "BIN", 3))
+    if (!memcmp(&(FileAttr.DIR_Name[8]), "BIN", 3))
     {
-        uint16_t flash_cnt = *(volatile uint16_t *) 0x1FFFF7E0;
+        uint16_t flash_cnt = STMFLASH_ReadHalfWord(0x1FFFF7E0);
         uint32_t freeflash  =  flash_cnt * FLASH_PAGE_SIZE;
         
         if(freeflash >= FileAttr.DIR_FileSize)
         {
             // Flash MCU
             STMFLASH_Write(FLASH_START_ADDR + FAT_LBA - 0x12000,(u16*)data, len/2);
+            //printf("F = %4x", FAT_LBA);
             *filesize_write += len;
             if(*filesize_write >= filesize_total)
             {
@@ -378,7 +379,13 @@ uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len
         {
             uint16_t flash_size = *(volatile uint16_t *) 0x1FFFF7E0;
             uint16_t i = 0;
+          #if defined STM32F10X_HD
             uint16_t free = flash_size/2 - (FLASH_START_ADDR-0x08000000)/FLASH_PAGE_SIZE;
+          #elif defined STM32F10X_MD
+            uint16_t free = flash_size - (FLASH_START_ADDR-0x08000000)/FLASH_PAGE_SIZE;
+          #endif
+            //uint16_t free = flash_size/2 - (FLASH_START_ADDR-0x08000000)/FLASH_PAGE_SIZE;
+            FLASH_Unlock();
             for(i = 0; i < free; i++)
             {
                 FLASH_ErasePage(FLASH_START_ADDR+i*FLASH_PAGE_SIZE);

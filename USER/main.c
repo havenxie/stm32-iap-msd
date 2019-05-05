@@ -72,22 +72,6 @@ __weak void API_delay_ms(uint32_t ms)
     while(tick--);
 }
 
-void APP_Init(void)
-{
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, FLASH_START_ADDR-NVIC_VectTab_FLASH);
-    
-    delay_init();
- 	LED_Init();
-    
-    while(1)
-    {
-        LED1=0;
-        delay_ms(20);
-        LED1=1;
-        delay_ms(980);
-    }
-}
-
 volatile uint32_t system_info   = 0;
 volatile uint32_t system_status = SYS_STATUS_USB_OFF | SYS_STATUS_UPDATE_OFF;
 
@@ -201,10 +185,21 @@ void USB_PlugOn(void)
 
 int main(void)
 {
-#if 0
-    APP_Init();
-    while(1);
+#if defined IAP_MSD_APP
+    
+    NVIC_SetVectorTable(NVIC_VectTab_FLASH, FLASH_START_ADDR-NVIC_VectTab_FLASH);
+    delay_init();
+ 	LED_Init();
+    while(1)
+    {
+        LED = 0;
+        delay_ms(500);
+        LED = 1;
+        delay_ms(500);
+    }
+    
 #else    
+    
     static int time_tick = 3; // 1S delay
     
 	delay_init();
@@ -219,13 +214,7 @@ int main(void)
  	USB_Interrupts_Config();    
  	Set_USBClock();   
  	USB_Init();
-//   	while(1)
-//    {
-//        LED1=0;
-//        delay_ms(20);
-//        LED1=1;
-//        delay_ms(980);
-//    }
+    
 	while(1)
 	{
         delay_ms(1000);
