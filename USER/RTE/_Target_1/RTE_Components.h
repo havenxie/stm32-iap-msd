@@ -3,7 +3,7 @@
  * Auto generated Run-Time-Environment Component Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'UsbCardReader' 
+ * Project: 'IAP-MSD' 
  * Target:  'Target 1' 
  */
 
