@@ -75,11 +75,22 @@ uint16_t MAL_Init(uint8_t lun)
 uint16_t MAL_Write(uint8_t lun, uint32_t Memory_Offset, uint32_t *Writebuff, uint16_t Transfer_Length)
 {
     uint16_t result = MAL_FAIL;
-    
+    uint16_t i = 0;
     if(0 == lun)
     {
         FATWriteLBA(Memory_Offset,(uint8_t*) Writebuff, (uint32_t) Transfer_Length);
         //STMFLASH_Write(FLASH_START_ADDR + Memory_Offset,(u16*)Writebuff,Transfer_Length/2);
+        
+//        printf("\r\nF = %4x", FLASH_START_ADDR + Memory_Offset  );
+//        for( i = 0; i < Transfer_Length; i++ )
+//        {
+//            if(i % 4 == 0) 
+//            {
+//                 printf("\r\nA=%8x  D=", FLASH_START_ADDR + Memory_Offset + i);
+//            }
+//            printf("%8x", Writebuff[i]);
+//        }
+        
         result = MAL_OK;
     }
     

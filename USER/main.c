@@ -5,7 +5,7 @@
 #include "hw_config.h"
 #include "FAT16.h"
 #include "main.h"
-
+#include "usart.h"
 
 void usb_port_set(u8 enable)
 {
@@ -204,6 +204,7 @@ int main(void)
     
 	delay_init();
     LED_Init();
+    uart_init(1000000);
 	NVIC_Configuration();
 	
 	delay_ms(500);
