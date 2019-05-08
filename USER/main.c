@@ -7,6 +7,7 @@
 #include "main.h"
 #include "usart.h"
 
+
 void usb_port_set(u8 enable)
 {
     uint16_t value;

@@ -18,7 +18,8 @@
 #if defined STM32F10X_HD
 #define LED    PEout(5)// PE5	
 #elif defined STM32F10X_MD
-#define LED    PAout(9)// PA09	
+//#define LED    PAout(9)// PA09	
+#define LED    PCout(13)// PC13	
 #endif
 
 void LED_Init(void);//≥ı ºªØ
