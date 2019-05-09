@@ -348,16 +348,27 @@ uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len
     int32_t filesize_total = (int32_t)FileAttr.DIR_FileSize;
     int32_t* filesize_write = (int32_t*)&(FileAttr.DIR_WriteTime);
     uint32_t i = 0;
-    
+    printf("\r\nFileName = %s, FileSize = %d",&(FileAttr.DIR_Name[0]), filesize_total);
     if (!memcmp(&(FileAttr.DIR_Name[8]), "BIN", 3))
     {
         uint16_t flash_cnt = *(volatile uint16_t *) 0x1FFFF7E0;
-        uint32_t freeflash  =  flash_cnt * FLASH_PAGE_SIZE;
+        //uint32_t freeflash  =  flash_cnt * FLASH_PAGE_SIZE;
+        uint32_t freeflash  =  flash_cnt * (FLASH_PAGE_SIZE / 2);
                      
         if(freeflash >= FileAttr.DIR_FileSize)
         {
-            // Flash MCU
-            STMFLASH_Write(FLASH_START_ADDR + FAT_LBA - 0x12000,(u16*)data, len/2);
+//            printf("\r\nAddr = %8x, FAT_LAB = %8x", FLASH_START_ADDR + FAT_LBA - 0x16000, FAT_LBA );
+//            for( i = 0; i < len; i++ )
+//            {
+//                if(i % 16 == 0) 
+//                {
+//                     printf("\r\nA=%8x  D=", FLASH_START_ADDR + FAT_LBA - 0x16000 + i);
+//                }
+//                printf("%2x", data[i]);
+//            }
+            
+             // Flash MCU
+            STMFLASH_Write(FLASH_START_ADDR + FAT_LBA - 0x16000,(u16*)data, len/2);           
             *filesize_write += len;
             if(*filesize_write >= filesize_total)
             {
@@ -545,7 +556,7 @@ uint32_t FATWriteLBA(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
              break;
         default:
              {
-                if(FAT_LBA >= 0x12000)
+                if(FAT_LBA >= 0x16000)
                 {    
                     FAT_DataSectorWriteRequest(FAT_LBA, data, len);
                 }
