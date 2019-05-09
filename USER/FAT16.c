@@ -374,22 +374,23 @@ uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len
     else if(!memcmp(&(FileAttr.DIR_Name[8]), "HEX", 3))
     {
         uint8_t result;
-        static uint16_t erasePageSize = 0;
-        uint16_t free = 0;
-        printf("\r\nLAB=%8x\r\n", FAT_LBA);
-        if(FAT_LBA == 0x16000)
+		static uint8_t firstRun = 0;
+        static uint16_t erasePageSize = 0, flashSize = 0, free = 0;
+        if(!firstRun)
         {
-            uint16_t flash_size = *(volatile uint16_t *) 0x1FFFF7E0;        
+			firstRun = ~firstRun;
+            flashSize = *(volatile uint16_t *) 0x1FFFF7E0;        
           #if defined STM32F10X_HD
             erasePageSize = FLASH_PAGE_SIZE;
-            free = flash_size/2 - (FLASH_START_ADDR-0x08000000)/FLASH_PAGE_SIZE;
+            free = flashSize/2 - (FLASH_START_ADDR - 0x08000000) / erasePageSize;
           #elif defined STM32F10X_MD
             erasePageSize = FLASH_PAGE_SIZE / 2;
-            free = flash_size - (FLASH_START_ADDR-0x08000000)/(FLASH_PAGE_SIZE/2);
+            free = flashSize - (FLASH_START_ADDR - 0x08000000) / erasePageSize;
           #endif
-            printf("\r\nFalshSize = %d, FreeSize = %d\r\n", flash_size, free);
+            printf("\r\nFalshSize = %d, FreeSize = %d, EndAddr = %8x\r\n", flashSize, free, flashSize * erasePageSize + NVIC_VectTab_FLASH - 1);
         }
-        
+		
+        printf("\r\nLAB = %8x", FAT_LBA);
         for(i = 0; i < len; i++)
         {
             result = hex_findobject(mHex, data[i]);
@@ -398,10 +399,14 @@ uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len
                 HEX_DATA_t mData;
                 if(hex_getdata(mHex, &mData))
                 {
-
+					if((mData.addr < FLASH_START_ADDR ) || (mData.addr > flashSize * erasePageSize + NVIC_VectTab_FLASH - 1))//check flash addr is right.
+					{
+						system_info = SYS_EVENT_ERR_APP;
+						break; 
+					}
                     if((mData.addr - FLASH_START_ADDR) % erasePageSize == 0)
                     {
-                        printf("\r\nEraseAddr=%8x",mData.addr);
+                        printf("\r\nEraseAddr = %8x",mData.addr);
                         FLASH_Unlock();
                         FLASH_ErasePage(mData.addr);
                     }
