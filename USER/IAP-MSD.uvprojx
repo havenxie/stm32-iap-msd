@@ -403,11 +403,6 @@
           <GroupName>HARDWARE</GroupName>
           <Files>
             <File>
-              <FileName>stmflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HARDWARE\stmflash.c</FilePath>
-            </File>
-            <File>
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\LED\led.c</FilePath>
@@ -431,6 +426,11 @@
               <FileName>sys.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SYSTEM\sys\sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\stmflash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1077,11 +1077,6 @@
           <GroupName>HARDWARE</GroupName>
           <Files>
             <File>
-              <FileName>stmflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HARDWARE\stmflash.c</FilePath>
-            </File>
-            <File>
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\LED\led.c</FilePath>
@@ -1105,6 +1100,11 @@
               <FileName>sys.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SYSTEM\sys\sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\stmflash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1751,11 +1751,6 @@
           <GroupName>HARDWARE</GroupName>
           <Files>
             <File>
-              <FileName>stmflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HARDWARE\stmflash.c</FilePath>
-            </File>
-            <File>
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\LED\led.c</FilePath>
@@ -1779,6 +1774,11 @@
               <FileName>sys.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SYSTEM\sys\sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\stmflash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2425,11 +2425,6 @@
           <GroupName>HARDWARE</GroupName>
           <Files>
             <File>
-              <FileName>stmflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HARDWARE\stmflash.c</FilePath>
-            </File>
-            <File>
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\LED\led.c</FilePath>
@@ -2453,6 +2448,11 @@
               <FileName>sys.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SYSTEM\sys\sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\stmflash.c</FilePath>
             </File>
           </Files>
         </Group>

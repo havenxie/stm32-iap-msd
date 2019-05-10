@@ -75,7 +75,6 @@ uint16_t MAL_Init(uint8_t lun)
 uint16_t MAL_Write(uint8_t lun, uint32_t Memory_Offset, uint32_t *Writebuff, uint16_t Transfer_Length)
 {
     uint16_t result = MAL_FAIL;
-    uint16_t i = 0;
     if(0 == lun)
     {
         FATWriteLBA(Memory_Offset,(uint8_t*) Writebuff, (uint32_t) Transfer_Length);

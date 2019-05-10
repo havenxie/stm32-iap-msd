@@ -340,9 +340,127 @@ uint32_t FAT_RootDirWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
     return len;
 }
 
+
 extern uint32_t flash_flag;
 static HEX_OBJ_t* mHex;
 
+uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
+{
+    static uint8_t firstRun = 0;
+    static uint16_t pageSize = 0, flashSize = 0, freeSize = 0;
+    static uint32_t flashEndAddr = 0;
+    int32_t filesize_total = (int32_t)FileAttr.DIR_FileSize;
+    int32_t* filesize_write = (int32_t*)&(FileAttr.DIR_WriteTime);
+    uint32_t i = 0;
+    if(!firstRun)
+    {
+        firstRun = ~firstRun;
+        flashSize = *(volatile uint16_t *) 0x1FFFF7E0;        
+        #if defined STM32F10X_HD
+        pageSize = FLASH_PAGE_SIZE;
+        freeSize = flashSize/2 - (FLASH_START_ADDR - 0x08000000) / pageSize;
+        #elif defined STM32F10X_MD
+        pageSize = FLASH_PAGE_SIZE / 2;
+        freeSize = flashSize - (FLASH_START_ADDR - 0x08000000) / pageSize;
+        #endif
+        flashEndAddr = flashSize * pageSize + NVIC_VectTab_FLASH - 1;
+        printf("\r\nFalshSize = %d, FreeSize = %d, EndAddr = %8x\r\n", flashSize, freeSize, flashEndAddr);
+    }        
+    
+    //printf("\r\nFileName = %s, FileSize = %d, FAT_LAB = %8x",&(FileAttr.DIR_Name[0]), filesize_total, FAT_LBA );
+    if (!memcmp(&(FileAttr.DIR_Name[8]), "BIN", 3))
+    {
+        static uint16_t dataTimes = 0;
+        uint32_t writeBase = 0, writeAddr = 0;
+        if(freeSize * pageSize >= FileAttr.DIR_FileSize)
+        {
+            for( i = 0; i < len; i+=2 )
+            {
+                writeAddr = FLASH_START_ADDR + dataTimes * pageSize + (i % pageSize);
+                //printf("\r\nBase = %8x A = %8x", writeBase, writeAddr);
+                if(( writeAddr < FLASH_START_ADDR ) || (writeAddr > flashEndAddr))//check flash addr is right.
+                {
+                    //printf("eer");
+                    system_info = SYS_EVENT_ERR_APP;
+                    break; 
+                }
+                if((writeAddr - FLASH_START_ADDR) % pageSize == 0)
+                {
+                    writeBase = FLASH_START_ADDR + dataTimes * pageSize;
+                    dataTimes += 1;
+                    FLASH_Unlock();
+                    FLASH_ErasePage(writeBase);
+                    //printf("\r\nEraseAddr = %8x",writeBase);
+                }
+                FLASH_Unlock();
+                FLASH_ProgramHalfWord(writeBase + (i % pageSize), (data[i+1]<<8) + data[i]);
+            }
+            *filesize_write += len;
+            //printf("\r\nAddrSize = %d", *filesize_write);
+            if(*filesize_write >= filesize_total)
+            {
+                //printf("\r\nOK");
+                *filesize_write = 0;
+                dataTimes = 0;
+                system_info = SYS_EVENT_ERR_SUCCESS;
+            }
+        }
+        else
+        {
+            system_info = SYS_EVENT_ERR_LARGE;
+        }
+    }
+    else if(!memcmp(&(FileAttr.DIR_Name[8]), "HEX", 3))
+    {
+        uint8_t result;
+        for(i = 0; i < len; i++)
+        {
+            result = hex_findobject(mHex, data[i]);
+            if(HEX_E_OK == result)
+            {
+                HEX_DATA_t mData;
+                if(hex_getdata(mHex, &mData))
+                {
+					if((mData.addr < FLASH_START_ADDR ) || (mData.addr > flashEndAddr))//check flash addr is right.
+					{
+						system_info = SYS_EVENT_ERR_APP;
+						break; 
+					}
+                    
+                    if((mData.addr - FLASH_START_ADDR) % pageSize == 0)
+                    {
+                        //printf("\r\nEraseAddr = %8x",mData.addr);
+                        FLASH_Unlock();
+                        FLASH_ErasePage(mData.addr);
+                    }
+                    FLASH_Unlock();
+                    STMFLASH_Write_NoCheck(mData.addr,(u16*) mData.data,(u16)(mData.len/2));
+                }
+            }
+            else if(HEX_E_FINISH == result)
+            {
+                system_info = SYS_EVENT_ERR_SUCCESS;
+            }
+        }
+    }
+    else if(!memcmp(&(FileAttr.DIR_Name[8]), "SEC", 3))
+    {
+        // TODO
+        // De-Encry
+        // Add Your Code Here
+        system_info = SYS_EVENT_ERR_UNKOWN;
+    }
+    else
+    {
+        // Can't Recognize it
+        // Cancel and Reset USB
+        system_info = SYS_EVENT_ERR_UNKOWN;
+    }
+
+    return len;
+}
+
+/*
 uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
 {
     int32_t filesize_total = (int32_t)FileAttr.DIR_FileSize;
@@ -351,29 +469,38 @@ uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len
     printf("\r\nFileName = %s, FileSize = %d",&(FileAttr.DIR_Name[0]), filesize_total);
     if (!memcmp(&(FileAttr.DIR_Name[8]), "BIN", 3))
     {
+        static uint16_t dataTimes = 0;
         uint16_t flash_cnt = *(volatile uint16_t *) 0x1FFFF7E0;
         //uint32_t freeflash  =  flash_cnt * FLASH_PAGE_SIZE;
         uint32_t freeflash  =  flash_cnt * (FLASH_PAGE_SIZE / 2);
                      
         if(freeflash >= FileAttr.DIR_FileSize)
         {
-//            printf("\r\nAddr = %8x, FAT_LAB = %8x", FLASH_START_ADDR + FAT_LBA - 0x16000, FAT_LBA );
-//            for( i = 0; i < len; i++ )
-//            {
+            printf("\r\nAddr = %8x, FAT_LAB = %8x", FLASH_START_ADDR + dataTimes * (FLASH_PAGE_SIZE / 2), FAT_LBA );
+            for( i = 0; i < len; i+=2 )
+            {
+                if( (dataTimes * (FLASH_PAGE_SIZE / 2) + (i % 0x400)) % (FLASH_PAGE_SIZE / 2) == 0)
+                {
+                    dataTimes += 1;
+                    FLASH_Unlock();
+                    FLASH_ErasePage(FLASH_START_ADDR + (dataTimes-1) * (FLASH_PAGE_SIZE / 2) + (i % 0x400));
+                    printf("\r\nEraseAddr = %8x",FLASH_START_ADDR + (dataTimes-1) * (FLASH_PAGE_SIZE / 2) + (i % 0x400));
+                }
+                FLASH_Unlock();
+                FLASH_ProgramHalfWord(FLASH_START_ADDR + (dataTimes-1) * (FLASH_PAGE_SIZE / 2) + (i % 0x400), (data[i+1]<<8) + data[i]);
 //                if(i % 16 == 0) 
 //                {
-//                     printf("\r\nA=%8x  D=", FLASH_START_ADDR + FAT_LBA - 0x16000 + i);
+//                    printf("\r\nA=%8x  D=", FLASH_START_ADDR + (dataTimes-1) * (FLASH_PAGE_SIZE / 2) + (i % 0x400));
 //                }
-//                printf("%2x", data[i]);
-//            }
-            
-             // Flash MCU
-            STMFLASH_Write(FLASH_START_ADDR + FAT_LBA - 0x16000,(u16*)data, len/2);           
+//                printf("%2x%2x", data[i], data[i+1]);
+            }          
             *filesize_write += len;
+            printf("\r\nAddrSize = %d", *filesize_write);
             if(*filesize_write >= filesize_total)
             {
+                printf("\r\nOK");
                 *filesize_write = 0;
-
+                dataTimes = 0;
                 system_info = SYS_EVENT_ERR_SUCCESS;
             }
         }
@@ -447,101 +574,8 @@ uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len
 
     return len;
 }
-
-/*
-uint32_t FAT_DataSectorWriteRequest(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
-{
-    int32_t filesize_total = (int32_t)FileAttr.DIR_FileSize;
-    int32_t* filesize_write = (int32_t*)&(FileAttr.DIR_WriteTime);
-    uint32_t i = 0;
-    
-    if (!memcmp(&(FileAttr.DIR_Name[8]), "BIN", 3))
-    {
-        uint16_t flash_cnt = *(volatile uint16_t *) 0x1FFFF7E0;
-        uint32_t freeflash  =  flash_cnt * FLASH_PAGE_SIZE;
-                     
-        if(freeflash >= FileAttr.DIR_FileSize)
-        {
-            // Flash MCU
-            STMFLASH_Write(FLASH_START_ADDR + FAT_LBA - 0x12000,(u16*)data, len/2);
-            *filesize_write += len;
-            if(*filesize_write >= filesize_total)
-            {
-                *filesize_write = 0;
-
-                system_info = SYS_EVENT_ERR_SUCCESS;
-            }
-        }
-        else
-        {
-            system_info = SYS_EVENT_ERR_LARGE;
-        }
-    }
-    else if(!memcmp(&(FileAttr.DIR_Name[8]), "HEX", 3))
-    {
-        uint8_t result;
-        printf("\r\nLAB=%8x\r\n", FAT_LBA);
-        if(FAT_LBA == 0x16000)
-        {
-            uint16_t flash_size = *(volatile uint16_t *) 0x1FFFF7E0;
-            uint16_t i = 0;            
-          #if defined STM32F10X_HD
-            uint16_t free = flash_size/2 - (FLASH_START_ADDR-0x08000000)/FLASH_PAGE_SIZE;
-          #elif defined STM32F10X_MD
-            uint16_t free = flash_size - (FLASH_START_ADDR-0x08000000)/(FLASH_PAGE_SIZE/2);
-          #endif
-            printf("\r\nFalshSize = %d, FreeSize = %d\r\n", flash_size, free);
-            FLASH_Unlock();
-            for(i = 0; i < free; i++)
-            {
-                #if defined STM32F10X_HD
-                FLASH_ErasePage(FLASH_START_ADDR+i*FLASH_PAGE_SIZE);
-                #elif defined STM32F10X_MD
-                FLASH_ErasePage(FLASH_START_ADDR+i*(FLASH_PAGE_SIZE/2));
-                printf("\r\nErrA=%8x", FLASH_START_ADDR+i*(FLASH_PAGE_SIZE/2));
-                #endif
-            }
-        }
-        
-        for(i = 0; i < len; i++)
-        {
-            result = hex_findobject(mHex, data[i]);
-            if(HEX_E_OK == result)
-            {
-                HEX_DATA_t mData;
-                if(hex_getdata(mHex, &mData))
-                {
-                    if(mData.addr >= FLASH_START_ADDR)
-                    {
-                        printf("\r\nA=%8x",mData.addr);
-                        FLASH_Unlock();
-                        STMFLASH_Write_NoCheck(mData.addr,(u16*) mData.data,(u16)(mData.len/2));
-                    }
-                }
-            }
-            else if(HEX_E_FINISH == result)
-            {
-                system_info = SYS_EVENT_ERR_SUCCESS;
-            }
-        }
-    }
-    else if(!memcmp(&(FileAttr.DIR_Name[8]), "SEC", 3))
-    {
-        // TODO
-        // De-Encry
-        // Add Your Code Here
-        system_info = SYS_EVENT_ERR_UNKOWN;
-    }
-    else
-    {
-        // Can't Recognize it
-        // Cancel and Reset USB
-        system_info = SYS_EVENT_ERR_UNKOWN;
-    }
-
-    return len;
-}
 */
+
 uint32_t FATWriteLBA(uint32_t FAT_LBA,uint8_t* data, uint32_t len)
 {
     switch(FAT_LBA)
