@@ -201,11 +201,11 @@ int main(void)
     
 #else    
     
-    static int time_tick = 3; // 1S delay
+    static int time_tick = 30; // 1S delay
     
 	delay_init();
     LED_Init();
-    uart_init(1000000);
+    //uart_init(1000000);
 	NVIC_Configuration();
 	
 	delay_ms(500);
@@ -219,7 +219,7 @@ int main(void)
     
 	while(1)
 	{
-        delay_ms(1000);
+        delay_ms(100);
         if((time_tick > 0) && (system_status == (SYS_STATUS_USB_OFF | SYS_STATUS_UPDATE_OFF)))
         {
             if(--time_tick <= 0)

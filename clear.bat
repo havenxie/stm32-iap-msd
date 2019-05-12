@@ -128,6 +128,9 @@ del *.plg /s
 del *.rpt /s
 del *.tmp /s
 del *.__i /s
+del *._2i /s
+del *.l2p /s
+del *.fed /s
 del *._ip /s
 del *._ia /s
 del *.i /s
@@ -151,7 +154,7 @@ del JLinkLog.txt /s
 
 del *.iex /s
 del *.htm /s
-::del *.sct /s
+del *.sct /s
 del *.map /s
 del *.htm /s
 del *.txt /s
