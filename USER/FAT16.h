@@ -15,7 +15,7 @@
 #define FATBootSize      62
 #define FATTableSize      4
 
-#define FLASH_START_ADDR         0x08005000       // Flash start address
+#define FLASH_START_ADDR         0x08004000       // Flash start address
 #define FLASH_SIZE              (100*1024*1024)   // 100M
 #define FLASH_PAGE_SIZE         (0x800)       // 2 Kbyte */
 #define FLASH_WAIT_TIMEOUT      100000
