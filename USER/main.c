@@ -66,7 +66,7 @@ uint32_t BL_Init(void)
     return SYS_EVENT_ERR_IDLE;
 }
 
-__weak void API_delay_ms(uint32_t ms)
+void API_delay_ms(uint32_t ms)
 {
     volatile uint32_t tick = ms*1000;
     

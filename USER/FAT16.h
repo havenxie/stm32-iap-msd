@@ -20,7 +20,7 @@
 #define FLASH_PAGE_SIZE         (0x800)       // 2 Kbyte */
 #define FLASH_WAIT_TIMEOUT      100000
 
-typedef __packed struct
+typedef  struct
 {
 	uint8_t  BS_jmpBoot[3];         // Jump Instruction to boot mode (e.g EB,3C,90)
 	uint8_t  BS_OEMName[8];         // OEM Name Identifier(e.g MSDOS5.0)
@@ -49,7 +49,7 @@ typedef __packed struct
 	uint16_t SigWord;               // 0xAA55
 }FAT_BPB_t;
 
-typedef __packed struct
+typedef  struct
 {
 	uint8_t  DIR_Name[11];          // File Name
 	uint8_t  DIR_Attr;              // File Attribute
