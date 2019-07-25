@@ -7,7 +7,6 @@
 #include "main.h"
 #include "usart.h"
 
-
 void usb_port_set(u8 enable)
 {
     uint16_t value;
@@ -200,18 +199,18 @@ int main(void)
     }
     
 #else    
-    
+	
     static int time_tick = 30; // 1S delay
-    
+
 	delay_init();
     LED_Init();
     //uart_init(1000000);
 	NVIC_Configuration();
 	
 	delay_ms(500);
- 	usb_port_set(0); 	//USBÏÈ¶Ï¿ª
+ 	usb_port_set(0); 	//USBï¿½È¶Ï¿ï¿½
 	delay_ms(300);
-   	usb_port_set(1);	//USBÔÙ´ÎÁ¬½Ó
+    usb_port_set(1);	//USBï¿½Ù´ï¿½ï¿½ï¿½ï¿½ï¿½
     
  	USB_Interrupts_Config();    
  	Set_USBClock();   
